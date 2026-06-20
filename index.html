@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minimalgoods</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+  
+  <!-- MediaPipe CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Virtual Cursor Elements -->
+  <div id="virtual-cursor" class="virtual-cursor">
+    <div id="cursor-dot" class="cursor-dot"></div>
+    <div id="cursor-ring" class="cursor-ring"></div>
+  </div>
+  
+  <!-- Camera feed and debug canvas -->
+  <div class="camera-container">
+    <video id="input_video" autoplay playsinline style="display: none;"></video>
+    <canvas id="output_canvas" class="output_canvas"></canvas>
+    <div id="status-indicator" class="status-indicator loading">Initializing Engine...</div>
+  </div>
+
+  <div id="app" class="theme-peach">
+    <nav class="navbar">
+      <div class="logo">minimalgoods</div>
+      <div class="nav-links">
+        <a href="#" class="nav-item">Articles</a>
+        <a href="#" class="nav-item">Shop</a>
+        <a href="#" class="nav-item">Members</a>
+        <a href="#" class="nav-item">Login</a>
+      </div>
+    </nav>
+
+    <main class="hero">
+      <div class="bg-text" id="bg-text">Bauhaus</div>
+      
+      <div class="product-display">
+        <button id="prev-btn" class="nav-btn prev-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        
+        <img id="product-img" src="/lamp_peach.png" alt="Pendant Light" class="product-img" />
+        
+        <button id="next-btn" class="nav-btn next-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </main>
+
+    <footer class="product-details">
+      <div class="product-title-section">
+        <h1 id="product-title">Small Glass<br>Pendant Light</h1>
+      </div>
+      
+      <div class="product-options">
+        <div class="option-group">
+          <label>BASE COLOR</label>
+          <select id="base-color">
+            <option>Green</option>
+            <option>Yellow</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>SECOND COLOR</label>
+          <select id="second-color">
+            <option>Yellow</option>
+            <option>Green</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>CORD TYPE</label>
+          <select id="cord-type">
+            <option>Hardwired</option>
+            <option>Plug-in</option>
+          </select>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
