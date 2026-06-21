@@ -75,12 +75,95 @@ function updateCarousel(index) {
     secondColorSelect.innerHTML = p.secondColor;
     cordTypeSelect.innerHTML = p.cordType;
     
+    // Rebuild custom dropdown overlays
+    buildCustomDropdowns();
+    
     // Fade back in
     productImg.style.opacity = 1;
     productImg.style.transform = 'scale(1)';
     bgTextElement.style.opacity = 1;
   }, 400); // Wait for fade out
 }
+
+// Build or update custom dropdowns
+function buildCustomDropdowns() {
+  const selects = document.querySelectorAll('.option-group select');
+  
+  selects.forEach(select => {
+    // Hide native select
+    select.style.display = 'none';
+    
+    // Find or create wrapper/custom container
+    let customSelect = select.parentElement.querySelector('.custom-select');
+    if (!customSelect) {
+      customSelect = document.createElement('div');
+      customSelect.className = 'custom-select';
+      select.after(customSelect);
+    }
+    
+    // Clear custom select contents
+    customSelect.innerHTML = '';
+    
+    // Create trigger
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger';
+    const triggerSpan = document.createElement('span');
+    triggerSpan.textContent = select.options[select.selectedIndex]?.text || '';
+    trigger.appendChild(triggerSpan);
+    customSelect.appendChild(trigger);
+    
+    // Create options container
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'custom-select-options';
+    
+    // Populate options
+    Array.from(select.options).forEach((opt, idx) => {
+      const customOpt = document.createElement('div');
+      customOpt.className = 'custom-option';
+      if (idx === select.selectedIndex) {
+        customOpt.classList.add('selected');
+      }
+      customOpt.textContent = opt.text;
+      customOpt.setAttribute('data-value', opt.value);
+      
+      // Click handler
+      customOpt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        select.selectedIndex = idx;
+        select.dispatchEvent(new Event('change'));
+        
+        // Update trigger text
+        triggerSpan.textContent = opt.text;
+        
+        // Highlight selected
+        optionsContainer.querySelectorAll('.custom-option').forEach(co => co.classList.remove('selected'));
+        customOpt.classList.add('selected');
+        
+        // Close dropdown
+        customSelect.classList.remove('open');
+      });
+      
+      optionsContainer.appendChild(customOpt);
+    });
+    
+    customSelect.appendChild(optionsContainer);
+    
+    // Toggle dropdown open
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Close other custom dropdowns first
+      document.querySelectorAll('.custom-select').forEach(cs => {
+        if (cs !== customSelect) cs.classList.remove('open');
+      });
+      customSelect.classList.toggle('open');
+    });
+  });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', () => {
+  document.querySelectorAll('.custom-select').forEach(cs => cs.classList.remove('open'));
+});
 
 prevBtn.addEventListener('click', () => {
   currentIndex = (currentIndex - 1 + products.length) % products.length;
@@ -102,7 +185,7 @@ window.addEventListener('resize', () => {
   screenH = window.innerHeight;
 });
 
-const SMOOTHING_FACTOR = 0.3;
+const SMOOTHING_FACTOR = 0.65;
 let cursorX = screenW / 2;
 let cursorY = screenH / 2;
 let targetX = cursorX;
@@ -120,7 +203,7 @@ function distance(p1, p2) {
 
 function mapToScreen(x, y) {
   const mirroredX = 1 - x;
-  const scale = 1.5;
+  const scale = 0.6;
   const offsetX = (1 - scale) / 2;
   const offsetY = (1 - scale) / 2;
   
@@ -192,10 +275,7 @@ function processGestures(landmarks) {
 
 // --- Synthetic Events ---
 function getElementUnderCursor() {
-  virtualCursor.style.display = 'none';
-  const el = document.elementFromPoint(cursorX, cursorY);
-  if (isTracking) virtualCursor.style.display = 'block';
-  return el;
+  return document.elementFromPoint(cursorX, cursorY);
 }
 
 function simulateClick() {
@@ -232,11 +312,34 @@ function simulateMouseUp() {
   }
 }
 
+let lastHoveredEl = null;
+
 function updateCursor() {
   if (isTracking) {
     cursorX += (targetX - cursorX) * SMOOTHING_FACTOR;
     cursorY += (targetY - cursorY) * SMOOTHING_FACTOR;
     virtualCursor.style.transform = `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%)`;
+
+    // Visual hover logic
+    const el = getElementUnderCursor();
+    if (el !== lastHoveredEl) {
+      if (lastHoveredEl) {
+        lastHoveredEl.classList.remove('virtual-hover');
+      }
+      if (el && (el.classList.contains('nav-btn') || el.classList.contains('nav-item') || el.classList.contains('logo') || el.classList.contains('custom-select-trigger') || el.classList.contains('custom-option') || el.tagName === 'SELECT' || el.tagName === 'BUTTON')) {
+        el.classList.add('virtual-hover');
+        virtualCursor.classList.add('hovering');
+      } else {
+        virtualCursor.classList.remove('hovering');
+      }
+      lastHoveredEl = el;
+    }
+  } else {
+    if (lastHoveredEl) {
+      lastHoveredEl.classList.remove('virtual-hover');
+      lastHoveredEl = null;
+    }
+    virtualCursor.classList.remove('hovering');
   }
   requestAnimationFrame(updateCursor);
 }
@@ -288,8 +391,8 @@ const camera = new Camera(videoElement, {
   onFrame: async () => {
     await hands.send({image: videoElement});
   },
-  width: 640,
-  height: 480
+  width: 1280,
+  height: 720
 });
 
 statusIndicator.textContent = "Requesting Camera...";
